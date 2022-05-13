@@ -1,37 +1,37 @@
 console.log("Content Script is running...");
 
 
-function saveNotesButton(height) {
-    let btn = document.createElement("button");
-    btn.setAttribute("id", "save-notes-btn");
+// function saveNotesButton(height) {
+//     let btn = document.createElement("button");
+//     btn.setAttribute("id", "save-notes-btn");
 
-    btn.textContent = "Save the notes";
-    btn.style.position = "absolute";
-    btn.style.backgroundColor = "white";
-    btn.style.border = "1px solid red";
-    btn.style.borderRadius = "5px";
-    btn.style.top = height + 5 + "px";
-    btn.style.right = "10px";
-    btn.style.fontSize = "15px"
-    btn.style.weight = "bold";
-    btn.style.cursor = "pointer";
-    document.getElementById("bounding-box").appendChild(btn);
+//     btn.textContent = "Save the notes";
+//     btn.style.position = "absolute";
+//     btn.style.backgroundColor = "white";
+//     btn.style.border = "1px solid red";
+//     btn.style.borderRadius = "5px";
+//     btn.style.top = height + 5 + "px";
+//     btn.style.right = "10px";
+//     btn.style.fontSize = "15px"
+//     btn.style.weight = "bold";
+//     btn.style.cursor = "pointer";
+//     document.getElementById("bounding-box").appendChild(btn);
 
-    btn.addEventListener("mouseover", e => {
-        console.log("没问题");
-        e.preventDefault();
-    });
+//     btn.addEventListener("mouseover", e => {
+//         console.log("没问题");
+//         e.preventDefault();
+//     });
 
-    btn.onclick = function(e) {
-        e.preventDefault();
-        console.log("是大家可能都看见阿森纳的喀纳斯可能的");
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            chrome.tabs.removeEventListener("mousedown", handleMousedown);
-            chrome.tabs.removeEventListener("mousemove", handleMousemove);
-            chrome.tabs.removeEventListener("mouseup", handleMouseup);
-        });
-    };
-}
+//     btn.onclick = function(e) {
+//         e.preventDefault();
+//         console.log("是大家可能都看见阿森纳的喀纳斯可能的");
+//         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+//             chrome.tabs.removeEventListener("mousedown", handleMousedown);
+//             chrome.tabs.removeEventListener("mousemove", handleMousemove);
+//             chrome.tabs.removeEventListener("mouseup", handleMouseup);
+//         });
+//     };
+// }
 
 
 function drawBoundingBox() {
@@ -118,10 +118,54 @@ function drawBoundingBox() {
             });
             reDrawRectangle();
             isDragged = false;
-            saveNotesButton(totalHeight);   
+            // saveNotesButton(totalHeight);   
+            let btn = document.createElement("button");
+            btn.setAttribute("id", "save-notes-btn");
+            btn.textContent = "Save the notes";
+            btn.style.position = "absolute";
+            btn.style.backgroundColor = "white";
+            btn.style.border = "1px solid red";
+            btn.style.borderRadius = "5px";
+            btn.style.top = totalHeight + 5 + "px";
+            btn.style.right = "10px";
+            btn.style.fontSize = "15px"
+            btn.style.weight = "bold";
+            btn.style.cursor = "pointer";
+            document.getElementById("bounding-box").appendChild(btn);
+
+            btn.addEventListener("mouseover", e => {
+                console.log("mouse over the button");
+                window.removeEventListener("mousedown", mousedownHandler);
+                window.removeEventListener("mousemove", mousemoveHandler);
+                window.removeEventListener("mouseup", mouseupHandler);
+            });
+
+            btn.addEventListener("mouseleave", e => {
+                console.log("mouse leaves the button");
+                window.addEventListener("mousedown", mousedownHandler);
+                window.addEventListener("mousemove", mousemoveHandler);
+                window.addEventListener("mouseup", mouseupHandler);
+            });
+
+            btn.onclick = function(e) {
+                console.log("save notes being clicked");
+                console.log(x1);
+                console.log(y1);
+                let ele = document.elementFromPoint(x1, y1);
+                console.log(ele)
+                console.dir(ele)
+
+                window.removeEventListener("mousedown", mousedownHandler);
+                window.removeEventListener("mousemove", mousemoveHandler);
+                window.removeEventListener("mouseup", mouseupHandler);
+                
+                let redbox = document.getElementById("bounding-box");
+                let savebtn = document.getElementById("save-notes-btn");
+                redbox.parentNode.removeChild(redbox);
+                savebtn.parentNode.removeChild(savebtn);
+
+            };
             
-            // for testing if retrieving the correct DOM element
-            // let ele = document.elementFromPoint(x1, y1);
         }
     };
 
