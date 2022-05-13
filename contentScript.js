@@ -152,7 +152,7 @@ function drawBoundingBox() {
                 console.log(x1);
                 console.log(y1);
                 let ele = document.elementFromPoint(x1, y1);
-                console.log(ele)
+                console.log(ele.nodeName)
                 console.dir(ele)
 
                 window.removeEventListener("mousedown", mousedownHandler);
