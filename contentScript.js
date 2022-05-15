@@ -34,7 +34,7 @@ console.log("Content Script is running...");
 // }
 
 
-function drawBoundingBox() {
+function drawBoundingBox(storageNotEmpty) {
     // Allow user to draw the bounding box
     console.log("Draw a bounding box.\n")
 
@@ -149,20 +149,53 @@ function drawBoundingBox() {
 
             btn.onclick = function(e) {
                 console.log("save notes being clicked");
+                let redbox = document.getElementById("bounding-box");
+                let savebtn = document.getElementById("save-notes-btn");
+                redbox.remove();
+                savebtn.remove();
                 console.log(x1);
                 console.log(y1);
-                let ele = document.elementFromPoint(x1, y1);
-                console.log(ele.nodeName)
-                console.dir(ele)
+                console.log(x1 - window.pageXOffset);
+                console.log(y1 - window.pageYOffset);
+               
+                let ele = document.elementFromPoint(x1 - window.pageXOffset,
+                                                    y1 - window.pageYOffset);
+                if (ele !== null) {
+                    console.log(ele.nodeName);
+                    console.log(ele.textContent); // true content
+                    console.dir(ele);
+                    console.log(ele);
+                    
+                    const textContent = ele.textContent;
+                    const styleContent = window.getComputedStyle(ele);
+
+                    if (storageNotEmpty) {
+                        let allText = localStorage.getItem("allContent");
+                        let allStyle = localStorage.getItem("allStyle");
+                        allText.append(textContent);
+                        allStyle.append(styleContent);
+                        localStorage.setItem("allContent", allText);
+                        localStorage.setItem("allStyle", allStyle);
+                    } else {
+                        localStorage.setItem("allContent", [textContent]);
+                        localStorage.setItem("allStyle", [styleContent]);
+                    }
+                    const pre = ele.getElementsByTagName("pre");
+                    if (pre) {
+                        console.log(pre);
+                    }
+                    // localStorage.setItem("allStyle", JSON.stringify(styleContent));
+                    // const retrieve1 = localStorage.getItem("allStyle");
+
+                    // console.log(JSON.parse(retrieve1));
+
+                  
+
+                }
 
                 window.removeEventListener("mousedown", mousedownHandler);
                 window.removeEventListener("mousemove", mousemoveHandler);
                 window.removeEventListener("mouseup", mouseupHandler);
-                
-                let redbox = document.getElementById("bounding-box");
-                let savebtn = document.getElementById("save-notes-btn");
-                redbox.parentNode.removeChild(redbox);
-                savebtn.parentNode.removeChild(savebtn);
 
             };
             
@@ -183,7 +216,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log(sender.tab ? "from a content script:" + sender.tab.url :
                              "from the extension");
     if (request.greeting === "TAKE_ACTION") {
-        drawBoundingBox();
+        drawBoundingBox(request.storageNotEmpty);
         sendResponse({farewell: "Done drawing a bounding box."});
     }
 });
