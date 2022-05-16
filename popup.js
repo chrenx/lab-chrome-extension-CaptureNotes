@@ -13,7 +13,7 @@ drawBox.onclick = function(e) {
                                 {greeting: "TAKE_ACTION", storageNotEmpty: storageNotEmpty},
                                 function(response) {
                                     console.log(response.farewell);
-                                    storageNotEmpty = true;
+                                    storageNotEmpty = response.storage;
                                 });
     });
     window.close();
@@ -22,15 +22,8 @@ drawBox.onclick = function(e) {
 
 snippetsStorage.onclick = function(e) {
     e.preventDefault();
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id,
-                                {greeting: "TAKE_ACTION", storageNotEmpty: storageNotEmpty},
-                                function(response) {
-                                    console.log(response.farewell);
-                                    storageNotEmpty = true;
-                                });
-    });
-    window.close();
+    window.open("mySnippets.html");
+    // window.close();
 };
 
 

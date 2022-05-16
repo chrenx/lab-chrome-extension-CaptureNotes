@@ -33,6 +33,19 @@ console.log("Content Script is running...");
 //     };
 // }
 
+function getBase64Image(img) {
+    var canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+
+    var dataURL = canvas.toDataURL("image/png");
+
+    return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
 
 function drawBoundingBox(storageNotEmpty) {
     // Allow user to draw the bounding box
@@ -167,29 +180,52 @@ function drawBoundingBox(storageNotEmpty) {
                     console.log(ele);
                     
                     const textContent = ele.textContent;
-                    const styleContent = window.getComputedStyle(ele);
+                    // const textContent = ele;
+                    const cssStyleContent = window.getComputedStyle(ele);
+                    let styleContent = {};
+                    var out ="";
+                    for (prop in ele.style) {
+                        if (ele.style.hasOwnProperty(prop)) {
+                        //   out += "  " + prop + " = '" + ele.style[prop] + "' > '" + cssStyleContent[prop] + "'\n";
+                          styleContent[prop] = cssStyleContent[prop];
+                        }
+                      }
+                      console.log(out);
+                      console.log(styleContent);
+                    // console.log(styleContent);
+                    let captureType = "C";
+
+                    const type = ele.getElementsByTagName("pre");
+                    if (type) {
+                        console.log("Capture a code snippets.");
+                    } else {
+                        type = ele.getElementsByTagName("img");
+                        if (type) {
+                            console.log("Capture an image.");
+                            captureType = "I";
+                            textContent = getBase64Image(ele);
+                        } else {
+                            console.log("Capture text");
+                            captureType = "T";
+                        }
+                    }
 
                     if (storageNotEmpty) {
-                        let allText = localStorage.getItem("allContent");
-                        let allStyle = localStorage.getItem("allStyle");
+                        let allText = chrome.storage.local.get(["allContent"]);
+                        let allStyle = chrome.storage.local.get(["allStyle"]);
+                        let allType = chrome.storage.local.get(["allType"]);
                         allText.append(textContent);
-                        allStyle.append(styleContent);
-                        localStorage.setItem("allContent", allText);
-                        localStorage.setItem("allStyle", allStyle);
+                        allStyle.append(JSON.stringify(styleContent));
+                        // allStyle.append(styleContent);
+                        allType.append(captureType);
+                        chrome.storage.local.set({"allContent": allText});
+                        chrome.storage.local.set({"allStyle": allStyle});
+                        chrome.storage.local.set({"allType": allType});
                     } else {
-                        localStorage.setItem("allContent", [textContent]);
-                        localStorage.setItem("allStyle", [styleContent]);
+                        chrome.storage.local.set({"allContent": [textContent]});
+                        chrome.storage.local.set({"allStyle": [JSON.stringify(styleContent)]});
+                        chrome.storage.local.set({"allType": [captureType]});
                     }
-                    const pre = ele.getElementsByTagName("pre");
-                    if (pre) {
-                        console.log(pre);
-                    }
-                    // localStorage.setItem("allStyle", JSON.stringify(styleContent));
-                    // const retrieve1 = localStorage.getItem("allStyle");
-
-                    // console.log(JSON.parse(retrieve1));
-
-                  
 
                 }
 
@@ -217,6 +253,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                              "from the extension");
     if (request.greeting === "TAKE_ACTION") {
         drawBoundingBox(request.storageNotEmpty);
-        sendResponse({farewell: "Done drawing a bounding box."});
+        sendResponse({farewell: "Done drawing a bounding box.", storage: true});
     }
 });
